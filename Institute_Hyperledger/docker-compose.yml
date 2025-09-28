@@ -1,0 +1,20 @@
+version: '2'
+
+services:
+  # Peer and Orderer configurations
+  peer0.org1.example.com:
+    # ... peer configuration
+  
+  orderer.example.com:
+    # ... orderer configuration
+  
+  # Certificate services
+  issuer-service:
+    build: ./services/issuer-service
+    environment:
+      - FABRIC_NETWORK_CONFIG=./network-config.yaml
+  
+  verifier-service:
+    build: ./services/verifier-service
+    environment:
+      - FABRIC_NETWORK_CONFIG=./network-config.yaml
