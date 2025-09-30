@@ -32,8 +32,8 @@ export function Hero() {
         </div>
         <div className="flex-1">
           <img
-            src="/secure-verification-dashboard-illustration.jpg"
-            alt="Illustration of a secure verification dashboard"
+            src="/india-government-certificate-verification-illustra.jpg"
+            alt="Certificate verification illustration for Indian institutions"
             className="w-full rounded-lg border"
           />
         </div>

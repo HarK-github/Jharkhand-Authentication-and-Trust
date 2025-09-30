@@ -33,7 +33,7 @@ export default function BlockchainProgress({ progress, step, steps }: Props) {
         </div>
         <Progress className="mt-2" value={progress} aria-label="Blockchain anchoring progress" />
         <p className="text-xs text-muted-foreground mt-2">
-          Simulated: hashing file contents, anchoring hash on chain, and waiting for confirmations.
+          Process: hashing file contents, anchoring hash on chain, and confirmations.
         </p>
       </div>
     </div>

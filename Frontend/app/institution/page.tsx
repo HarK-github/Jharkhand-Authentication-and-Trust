@@ -34,26 +34,25 @@ export default function InstitutionPage() {
       <section className="mx-auto max-w-5xl px-4 py-12">
         <h1 className="text-2xl md:text-3xl font-semibold">Institution Portal</h1>
         <p className="text-muted-foreground mt-2">
-          Upload new certificate issuances (CSV) and manage your institution’s verification footprint. This demo does
-          not store any data.
+          Upload new certificate issuances (CSV) and manage your institution’s verification footprint.
         </p>
 
         <div className="mt-8 grid gap-6 md:grid-cols-2">
           <form onSubmit={handleSubmit} className="rounded-lg border p-6 bg-card grid gap-4">
             <div>
               <label htmlFor="csv" className="text-sm font-medium">
-                CSV Upload (simulated)
+                CSV Upload
               </label>
               <textarea
                 id="csv"
                 rows={8}
-                placeholder={`certificateId,fullName,institution,program,graduationYear,issuedAt,signatureHash
+                placeholder={`certificate_id,full_name,institution,program,graduation_year,issued_at,signature_hash
 JH-2024-ENG-0101,Sunita Devi,Ranchi University,B.Tech (Civil),2024,2024-06-15T00:00:00.000Z,sig_xxx...`}
                 value={rows}
                 onChange={(e) => setRows(e.target.value)}
                 className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
               />
-              <p className="text-xs text-muted-foreground mt-1">Paste CSV rows. Data is not persisted in this demo.</p>
+              <p className="text-xs text-muted-foreground mt-1">Paste CSV rows. This is for illustration purposes.</p>
             </div>
             <button
               type="submit"
@@ -63,7 +62,7 @@ JH-2024-ENG-0101,Sunita Devi,Ranchi University,B.Tech (Civil),2024,2024-06-15T00
             </button>
             {submitted && (
               <div className="rounded-md border p-3 bg-background">
-                <p className="text-sm">Batch accepted (simulated). 0 records stored in this demo.</p>
+                <p className="text-sm">Batch received.</p>
               </div>
             )}
           </form>
@@ -80,9 +79,7 @@ JH-2024-ENG-0101,Sunita Devi,Ranchi University,B.Tech (Civil),2024,2024-06-15T00
 
         <div className="mt-8 rounded-lg border p-6 bg-card">
           <p className="font-medium">Connected Databases (ERP)</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Simulated view of databases connected with your institute’s ERP.
-          </p>
+          <p className="text-xs text-muted-foreground mt-1">View of databases connected with your institute’s ERP.</p>
           <div className="mt-4 grid gap-3">
             {CONNECTED_DBS.map((row) => (
               <div
@@ -108,6 +105,95 @@ JH-2024-ENG-0101,Sunita Devi,Ranchi University,B.Tech (Civil),2024,2024-06-15T00
               </div>
             ))}
           </div>
+        </div>
+
+        <div className="mt-8 rounded-lg border p-6 bg-card">
+          <p className="font-medium">SQL: Linking ERP Database to JAT Central Database</p>
+          <p className="text-xs text-muted-foreground mt-1">Example schemas and joins for integration.</p>
+          <pre className="mt-3 whitespace-pre-wrap text-xs bg-background rounded-md border p-3 overflow-x-auto">
+            <code>{`-- Central JAT database (PostgreSQL)
+CREATE TABLE institutions (
+  id UUID PRIMARY KEY,
+  name TEXT NOT NULL,
+  erp_name TEXT,
+  issuer_public_key TEXT NOT NULL
+);
+
+CREATE TABLE certificates (
+  certificate_id TEXT PRIMARY KEY,
+  institution_id UUID REFERENCES institutions(id),
+  full_name TEXT NOT NULL,
+  program TEXT NOT NULL,
+  graduation_year INTEGER NOT NULL,
+  issued_at TIMESTAMPTZ NOT NULL,
+  signature_hash TEXT NOT NULL
+);
+
+CREATE TABLE certificate_anchors (
+  certificate_id TEXT REFERENCES certificates(certificate_id),
+  anchor_tx_id TEXT NOT NULL,
+  anchored_at TIMESTAMPTZ NOT NULL,
+  confirmations INTEGER DEFAULT 0,
+  PRIMARY KEY (certificate_id, anchor_tx_id)
+);
+
+-- Example ERP schema (institute side)
+-- Assume ERP schema name: erp
+CREATE TABLE erp.students (
+  student_id TEXT PRIMARY KEY,
+  full_name TEXT NOT NULL,
+  institution TEXT NOT NULL,
+  program TEXT NOT NULL,
+  graduation_year INTEGER NOT NULL
+);
+
+CREATE TABLE erp.issuances (
+  certificate_id TEXT PRIMARY KEY,
+  student_id TEXT REFERENCES erp.students(student_id),
+  issued_at TIMESTAMPTZ NOT NULL,
+  signature_hash TEXT NOT NULL
+);
+
+-- Linking query (read-only join)
+SELECT
+  i.name AS institution,
+  c.certificate_id,
+  c.full_name,
+  c.program,
+  c.graduation_year,
+  c.issued_at,
+  a.anchor_tx_id,
+  a.confirmations
+FROM certificates c
+JOIN institutions i ON i.id = c.institution_id
+LEFT JOIN certificate_anchors a ON a.certificate_id = c.certificate_id
+WHERE c.certificate_id = 'JH-2024-ENG-0101';
+
+-- Example: materialized view for fast comparisons
+CREATE MATERIALIZED VIEW mv_certificate_index AS
+SELECT
+  c.certificate_id,
+  LOWER(c.full_name) AS full_name_idx,
+  LOWER(c.program) AS program_idx,
+  c.graduation_year,
+  c.institution_id
+FROM certificates c;
+
+-- Example: ingest from ERP to central (nightly)
+INSERT INTO certificates (certificate_id, institution_id, full_name, program, graduation_year, issued_at, signature_hash)
+SELECT
+  e.certificate_id,
+  i.id AS institution_id,
+  s.full_name,
+  s.program,
+  s.graduation_year,
+  e.issued_at,
+  e.signature_hash
+FROM erp.issuances e
+JOIN erp.students s ON s.student_id = e.student_id
+JOIN institutions i ON i.name = s.institution
+ON CONFLICT (certificate_id) DO NOTHING;`}</code>
+          </pre>
         </div>
       </section>
       <SiteFooter />
