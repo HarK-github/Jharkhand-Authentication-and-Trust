@@ -1,0 +1,109 @@
+# cv2 → handle images (read, crop, etc.)
+import cv2  
+
+# MTCNN → simple face detector
+from mtcnn import MTCNN  
+
+# DeepFace → makes face embeddings (vectors)
+from deepface import DeepFace  
+
+# numpy → for maths
+import numpy as np  
+
+# fingerprint_enhancer → for making thumbprint clear
+import fingerprint_enhancer  
+
+# skimage → extra image tools
+from skimage import feature  
+
+
+# ---------- FACE VERIFICATION ----------
+def detect_face(image_path):
+    """
+    Step 1: Find the face in the image
+    Input: image file path
+    Output: cropped face
+    """
+    detector = MTCNN()
+    image = cv2.imread(image_path)
+    faces = detector.detect_faces(image)
+    return faces   # (normally returns coordinates of face)
+
+
+def get_face_embedding(face_image):
+    """
+    Step 2: Convert face into numbers (vector form)
+    Every face → becomes a long list of numbers (embedding)
+    """
+    embedding = DeepFace.represent(face_image, model_name="Facenet")[0]["embedding"]
+    return np.array(embedding)
+
+
+def compare_faces(embed1, embed2):
+    """
+    Step 3: Compare two face vectors
+    If they are similar → means faces are same
+    """
+    similarity = np.dot(embed1, embed2) / (np.linalg.norm(embed1) * np.linalg.norm(embed2))
+    return similarity
+
+
+# ---------- THUMBPRINT VERIFICATION ----------
+def preprocess_thumb(image_path):
+    """
+    Step 1: Load thumbprint and make it clearer
+    Gray + enhance ridges so patterns are visible
+    """
+    img = cv2.imread(image_path, 0)  # 0 → grayscale
+    enhanced_img = fingerprint_enhancer.enhance_Fingerprint(img)
+    return enhanced_img
+
+
+def extract_minutiae(enhanced_img):
+    """
+    Step 2: Find special points in thumbprint
+    (like ridge endings, splits → called minutiae)
+    """
+    features = feature.canny(enhanced_img)  # simple demo with edge detection
+    return features
+
+
+def compare_thumb(features1, features2):
+    """
+    Step 3: Compare two thumbprints
+    Higher score → more similar
+    """
+    score = np.sum(features1 == features2) / features1.size
+    return score
+
+
+# ---------- MASTER PIPELINE ----------
+def verify_identity(face_img1, face_img2, thumb_img1, thumb_img2):
+    """
+    This function connects everything:
+    1. Check face similarity
+    2. Check thumb similarity
+    3. Give final decision
+    """
+
+    # ---- FACE PART ----
+    face1 = detect_face(face_img1)
+    face2 = detect_face(face_img2)
+    embed1 = get_face_embedding(face1)
+    embed2 = get_face_embedding(face2)
+    face_score = compare_faces(embed1, embed2)
+
+    # ---- THUMB PART ----
+    thumb1 = preprocess_thumb(thumb_img1)
+    thumb2 = preprocess_thumb(thumb_img2)
+    features1 = extract_minutiae(thumb1)
+    features2 = extract_minutiae(thumb2)
+    thumb_score = compare_thumb(features1, features2)
+
+    # ---- FINAL DECISION ----
+    if face_score > 0.6 and thumb_score > 0.6:
+        return "✅ Verified (Face + Thumb matched)"
+    elif face_score > 0.6 or thumb_score > 0.6:
+        return "⚠️ Manual Review (only one matched)"
+    else:
+        return "❌ Rejected (Both mismatch)"
