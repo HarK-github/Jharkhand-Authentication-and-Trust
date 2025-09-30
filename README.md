@@ -41,55 +41,54 @@ PDF Certificate → SHA-256 Hash → Hyperledger Fabric Blockchain
 
 ## AI/ML Document Processing
 
-### Document Extraction & Forgery Detection – Summary
-
-#### 🔄 Pipeline
-1. Input Handling  
-   - Detect PDF / Image  
-   - Convert PDF → Images  
-
-2. Preprocessing  
-   - Grayscale, Binarization  
-   - Noise removal, Morphology  
-   - Inversion (if needed)  
-
-3. OCR (Tesseract)  
-   - Extract raw text  
-   - Configurable PSM & OEM  
-
-4. Entity Extraction  
-   - spaCy NER → Name, Institution, Date  
-   - Regex → Roll No, Cert ID, CGPA, Date of Issue  
-
-5. Confidence Scoring (Fuzzy Matching)  
-   - Field-level score (0–100)  
-   - Overall confidence = average of all fields  
+### 1. Document Extraction & Confidence Scoring
+1. Input + OCR  
+   - Handle PDF/Image → Preprocess (binarize, denoise) → OCR with Tesseract  
+2. Entity Extraction  
+   - spaCy NER (Name, Institution, Date) + Regex (Roll No, Cert ID, CGPA)  
+3. Confidence Scoring  
+   - Fuzzy matching vs. reference → Field-wise & overall confidence  
 
 ---
 
-#### 🔍 Forgery Detection
-- Seal & Stamp Verification → Siamese Network + Contrastive Loss  
-- Signature Verification → Same Siamese model  
-- Font/Text Analysis  
-  - Error Level Analysis (ELA)  
-  - OCR text boxes + font features  
-  - Random Forest classifier → genuine vs. forged  
+### 2. Forgery Detection
+1. Seal & Stamp Verification  
+   - Siamese Network + Contrastive Loss → genuine vs. forged  
+2. Signature Verification  
+   - Same Siamese model for comparing signatures  
+3. Font/Text Analysis  
+   - Error Level Analysis (ELA) + OCR text boxes + Random Forest  
 
 ---
 
-#### ⚙️ Tech Stack
+### 3. Face & Thumbprint Verification
+1. Face Recognition  
+   - Detect face (MTCNN) → Embedding (DeepFace) → Compare similarity  
+2. Thumbprint Matching  
+   - Enhance print (fingerprint_enhancer) → Extract minutiae → Compare features  
+3. Identity Decision  
+   - ✅ Verified if both match  
+   - ⚠️ Manual Review if only one matches  
+   - ❌ Reject if both mismatch  
+
+---
+
+### ⚙️ Tech Stack
 - OCR: Tesseract (pytesseract)  
 - NER: spaCy  
-- Preprocessing: OpenCV  
+- Image Processing: OpenCV, scikit-image  
 - Fuzzy Matching: fuzzywuzzy  
 - Forgery Detection: PyTorch (Siamese NN), scikit-learn (Random Forest), ELA  
+- Biometrics: MTCNN, DeepFace, fingerprint_enhancer  
 
 ---
 
-#### 🖥️ Example Outputs
+### 🖥️ Outputs
 - Extracted fields: Name, Roll No, Cert ID, CGPA, Date, Institution  
-- Confidence: per field + overall  
-- Forgery results: seals, signatures, fonts  
+- Confidence: field-level + overall  
+- Forgery flags: seals, signatures, fonts  
+- Biometric verification: face + thumbprint results  
+ 
 
 
 **Blockchain Verification**
