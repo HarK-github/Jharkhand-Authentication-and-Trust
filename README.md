@@ -1,118 +1,136 @@
-# Jharkhand-Authentication-and-Trust
-Certificate validator for jharkhand acadmeia and institutions.
-
-
-# Front end
-# Backend
- ## Document comparision
-# Smart Contract V
-A blockchain-based certificate verification solution using Hyperledger Fabric that provides tamper-proof storage of certificate hashes and metadata. Supports both PDF and image-based certificates with AI/ML verification.
-
-## Certificate Issuance Flow
-
-### Certificate Generation
-- University ERP system generates certificates (PDF format)
-- For physical certificates: Generate with embedded QR code
-
-### Hash Creation & Storage
-```
-PDF Certificate → SHA-256 Hash → Hyperledger Fabric Blockchain
-```
-- System computes SHA-256 hash of the PDF certificate
-- Writes to blockchain: hash + metadata (student name, roll number, certificate ID, issuing authority, timestamp)
-
-### QR Code Generation (for physical certificates)
-- QR code contains: certificate ID + verification URL
-- Embedded on physical certificates
-
-## Certificate Verification Flow
-
-### For PDF Certificates
-**Direct Hash Comparison**
-- User uploads PDF certificate
-- System computes SHA-256 hash of uploaded PDF
-- Compares with on-chain hash in Hyperledger Fabric
-- **Match** → Authentic ✅ | **No Match** → Fake ❌
-
-### For Image Certificates (Photos/Scans)
-**QR Code Scanning**
-- User uploads image of physical certificate
-- System scans QR code to extract certificate ID
-
-## AI/ML Document Processing
-
-### 1. Document Extraction & Confidence Scoring
-1. Input + OCR  
-   - Handle PDF/Image → Preprocess (binarize, denoise) → OCR with Tesseract  
-2. Entity Extraction  
-   - spaCy NER (Name, Institution, Date) + Regex (Roll No, Cert ID, CGPA)  
-3. Confidence Scoring  
-   - Fuzzy matching vs. reference → Field-wise & overall confidence  
-
----
-
-### 2. Forgery Detection
-1. Seal & Stamp Verification  
-   - Siamese Network + Contrastive Loss → genuine vs. forged  
-2. Signature Verification  
-   - Same Siamese model for comparing signatures  
-3. Font/Text Analysis  
-   - Error Level Analysis (ELA) + OCR text boxes + Random Forest  
-
----
-
-### 3. Face & Thumbprint Verification
-1. Face Recognition  
-   - Detect face (MTCNN) → Embedding (DeepFace) → Compare similarity  
-2. Thumbprint Matching  
-   - Enhance print (fingerprint_enhancer) → Extract minutiae → Compare features  
-3. Identity Decision  
-   - ✅ Verified if both match  
-   - ⚠️ Manual Review if only one matches  
-   - ❌ Reject if both mismatch  
-
----
-
-### ⚙️ Tech Stack
-- OCR: Tesseract (pytesseract)  
-- NER: spaCy  
-- Image Processing: OpenCV, scikit-image  
-- Fuzzy Matching: fuzzywuzzy  
-- Forgery Detection: PyTorch (Siamese NN), scikit-learn (Random Forest), ELA  
-- Biometrics: MTCNN, DeepFace, fingerprint_enhancer  
-
----
-
-### 🖥️ Outputs
-- Extracted fields: Name, Roll No, Cert ID, CGPA, Date, Institution  
-- Confidence: field-level + overall  
-- Forgery flags: seals, signatures, fonts  
-- Biometric verification: face + thumbprint results  
  
+# Jharkhand Academic Trust (JAT) – Certificate Verification System
 
+## Overview
 
-**Blockchain Verification**
-- Uses certificate ID from QR to fetch original hash from blockchain
-- Compares reconstructed data with on-chain record
+The Jharkhand Academic Trust (JAT) is a blockchain-based certificate verification system designed for academic institutions in Jharkhand. It provides tamper-proof certificate storage using **Hyperledger Fabric** and supports verification of both digital (PDF) and physical (scanned) certificates. AI-assisted modules enhance fraud detection by verifying seals, signatures, text, faces, and fingerprints.
+
+---
+ 
+# Deployed link : https://jharkhand-authentication-and-trust.vercel.app/admin
+
+# Screenshots
+<p align="center"> <img src="https://github.com/user-attachments/assets/6e4cf296-f52a-4c30-97fd-269a3b3bca9b" alt="System Architecture" width="700"/> </p> <p align="center"> <img src="https://github.com/user-attachments/assets/e2ebbc98-2529-4b7b-87fe-ef5ac11a97c1" alt="Verification Workflow" width="700"/> </p> <p align="center"> <img src="https://github.com/user-attachments/assets/a1dab024-990c-4b1b-8aa0-2888ccedc987" alt="Detailed Process Flow" width="700"/> </p>
+
+## Project Structure
+
+```bash
+Jharkhand-Academic-Trust/
+│
+├── Backend/                        # AI/Verification logic
+│   ├── Fake Degree verification system- AI Layer 2.py
+│   ├── FuzzyTextMatching.ipynb
+│   ├── NER.ipynb
+│   ├── OCR.ipynb
+│   ├── face_fingerprint_detection.pynb
+│   ├── pdf2image.ipynb
+│   ├── pre_processing.ipynb
+│   ├── index.js
+│   └── README.md
+│
+├── Frontend/                       # Web application (Next.js)
+│   ├── app/
+│   ├── components/
+│   ├── data/
+│   ├── hooks/
+│   ├── lib/
+│   ├── public/
+│   ├── styles/
+│   ├── components.json
+│   ├── index.js
+│   ├── next.config.mjs
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── pnpm-lock.yaml
+│   ├── postcss.config.mjs
+│   └── tsconfig.json
+│
+└── Institute_Hyperledger/          # Blockchain layer
+    ├── chaincode/certificate-cc/   # Smart contracts
+    ├── services/                   # Blockchain services
+    ├── contract.js
+    ├── docker-compose.yml          # Network setup
+    ├── network.sh                  # Hyperledger network scripts
+    └── README.md
+```
+
+---
 
 ## Technology Stack
 
-- **Blockchain**: Hyperledger Fabric
-- **File Hashing**: SHA-256 for PDF verification
-- **Storage**: IPFS for certificate backups
+* **Blockchain**: Hyperledger Fabric, IPFS
+* **Backend (AI/Verification)**: Python, PyTorch, OpenCV, spaCy, Tesseract OCR, scikit-learn
+* **Frontend**: Next.js (React), TailwindCSS
+* **Other Tools**: Docker, Node.js, fuzzywuzzy, DeepFace, fingerprint enhancer
 
-## Key Features
+---
 
-- **PDF Verification**: Direct hash comparison for digital certificates
-- **Image Verification**: AI/ML + QR code scanning for physical documents
-- **Instant Results**: Real-time authenticity checks
-- **Tamper-Proof**: Hyperledger Fabric ensures data integrity
-- **Multi-Format**: Supports both digital and physical certificates
+## Execution
+
+### Prerequisites
+
+* Docker & Docker Compose
+* Node.js (v16 or later)
+* Python 3.9+
+* Hyperledger Fabric binaries
+
+### Steps
+
+1. **Set up the Hyperledger Network**
+
+   ```bash
+   cd Institute_Hyperledger
+   ./network.sh up
+   ./network.sh createChannel
+   ./network.sh deployCC
+   ```
+
+2. **Run the Blockchain Services**
+
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **Backend Setup**
+
+   ```bash
+   cd Backend
+   python3 -m venv venv
+   source venv/bin/activate   # Linux/Mac
+   venv\Scripts\activate      # Windows
+   pip install -r requirements.txt
+   python index.js
+   ```
+
+4. **Frontend Setup**
+
+   ```bash
+   cd Frontend
+   npm install    # or pnpm install
+   npm run dev
+   ```
+
+5. **Access the Application**
+   Open [http://localhost:3000](http://localhost:3000) in a browser to access the verification portal.
+
+---
+
+## Outputs
+
+* Certificate authenticity: Genuine / Suspicious / Fraudulent
+* Extracted details: Name, Roll Number, Certificate ID, Institution, CGPA, Date
+* Confidence scoring for each field and overall document
+* Blockchain verification result via hash or QR comparison
+
+---
 
 ## Benefits
 
-- **PDF Certificates**: Fast, direct hash verification
-- **Physical Certificates**: AI-powered image processing + QR verification
-- **Secure**: Hyperledger Fabric ensures immutability
-- **Accurate**: Combined blockchain + AI verification
-- **User-Friendly**: Simple upload/scan process
+* **Students**: Certificates that are secure and universally verifiable
+* **Employers**: Quick and reliable candidate verification
+* **Universities**: Reduced manual verification and improved credibility
+* **Government**: Scalable, trusted framework for academic integrity
+
+---
+
+ 
