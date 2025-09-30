@@ -39,10 +39,58 @@ PDF Certificate → SHA-256 Hash → Hyperledger Fabric Blockchain
 - User uploads image of physical certificate
 - System scans QR code to extract certificate ID
 
-**AI/ML Document Processing**
-- Extracts text and data from certificate image using OCR
-- Validates format, signatures, and security features
-- Reconstructs digital representation for verification
+## AI/ML Document Processing
+
+### Document Extraction & Forgery Detection – Summary
+
+#### 🔄 Pipeline
+1. Input Handling  
+   - Detect PDF / Image  
+   - Convert PDF → Images  
+
+2. Preprocessing  
+   - Grayscale, Binarization  
+   - Noise removal, Morphology  
+   - Inversion (if needed)  
+
+3. OCR (Tesseract)  
+   - Extract raw text  
+   - Configurable PSM & OEM  
+
+4. Entity Extraction  
+   - spaCy NER → Name, Institution, Date  
+   - Regex → Roll No, Cert ID, CGPA, Date of Issue  
+
+5. Confidence Scoring (Fuzzy Matching)  
+   - Field-level score (0–100)  
+   - Overall confidence = average of all fields  
+
+---
+
+#### 🔍 Forgery Detection
+- Seal & Stamp Verification → Siamese Network + Contrastive Loss  
+- Signature Verification → Same Siamese model  
+- Font/Text Analysis  
+  - Error Level Analysis (ELA)  
+  - OCR text boxes + font features  
+  - Random Forest classifier → genuine vs. forged  
+
+---
+
+#### ⚙️ Tech Stack
+- OCR: Tesseract (pytesseract)  
+- NER: spaCy  
+- Preprocessing: OpenCV  
+- Fuzzy Matching: fuzzywuzzy  
+- Forgery Detection: PyTorch (Siamese NN), scikit-learn (Random Forest), ELA  
+
+---
+
+#### 🖥️ Example Outputs
+- Extracted fields: Name, Roll No, Cert ID, CGPA, Date, Institution  
+- Confidence: per field + overall  
+- Forgery results: seals, signatures, fonts  
+
 
 **Blockchain Verification**
 - Uses certificate ID from QR to fetch original hash from blockchain
