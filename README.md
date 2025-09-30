@@ -1,8 +1,8 @@
  
 # Jharkhand Academic Trust (JAT) – Certificate Verification System
-
 ## Overview
 
+### Note : This repo contains the skeleton structure of our code. 
 The Jharkhand Academic Trust (JAT) is a blockchain-based certificate verification system designed for academic institutions in Jharkhand. It provides tamper-proof certificate storage using **Hyperledger Fabric** and supports verification of both digital (PDF) and physical (scanned) certificates. AI-assisted modules enhance fraud detection by verifying seals, signatures, text, faces, and fingerprints.
 
 ---
@@ -124,13 +124,5 @@ Jharkhand-Academic-Trust/
 
 ---
 
-## Benefits
-
-* **Students**: Certificates that are secure and universally verifiable
-* **Employers**: Quick and reliable candidate verification
-* **Universities**: Reduced manual verification and improved credibility
-* **Government**: Scalable, trusted framework for academic integrity
-
----
-
+ 
  
